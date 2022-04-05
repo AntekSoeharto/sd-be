@@ -3,10 +3,10 @@ package Controller
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"net/http"
 	"sd-api/Model"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +18,7 @@ func AddUser(c *gin.Context) {
 	nama := c.PostForm("nama")
 	email := c.PostForm("email")
 	password := GetMD5Hash(c.PostForm("password"))
+	fmt.Println(nama)
 
 	Users := RepoGetAllUser("")
 
@@ -28,6 +29,7 @@ func AddUser(c *gin.Context) {
 			sama = true
 		}
 	}
+	fmt.Println(nama)
 
 	var response Model.ResponseData
 	if sama == false {
@@ -86,6 +88,7 @@ func RepoGetAllUser(id string) []Model.User {
 	if err != nil {
 		log.Print(err)
 	}
+	fmt.Println("Masuk")
 
 	var User Model.User
 	var Users []Model.User
@@ -95,10 +98,6 @@ func RepoGetAllUser(id string) []Model.User {
 		} else {
 			Users = append(Users, User)
 		}
-	}
-
-	for i := 0; i < len(Users); i++ {
-		Users[i].ListFilm = RepoGetMyList(strconv.Itoa(Users[i].ID))
 	}
 
 	return Users
@@ -172,8 +171,8 @@ func Login(c *gin.Context) {
 	db := connect()
 	defer db.Close()
 
-	email := c.PostForm("email")
-	password := GetMD5Hash(c.PostForm("password"))
+	email := c.Query("email")
+	password := GetMD5Hash(c.Query("password"))
 	var success bool = false
 
 	Users := RepoGetAllUser("")

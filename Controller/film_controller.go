@@ -21,9 +21,11 @@ func AddFilm(c *gin.Context) {
 	sinopsis := c.PostForm("sinopsis")
 	film_type := c.PostForm("film_type")
 	release_type := c.PostForm("release_type")
-	duration := c.PostForm("duration")
+	duration, _ := strconv.Atoi(c.PostForm("duration"))
+	image := c.PostForm("image")
+	img_background := c.PostForm("img_background")
 
-	_, errQuery := db.Exec("INSERT INTO films(judul, rating, tanggal_terbit, actor, sinopsis, film_type, release_type, duration) VALUES (?,?,?,?,?,?,?,?)",
+	_, errQuery := db.Exec("INSERT INTO films(judul, rating, tanggal_terbit, actor, sinopsis, film_type, release_type, duration, display_method, image, img_background) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
 		judul,
 		rating,
 		tanggal_terbit,
@@ -32,6 +34,9 @@ func AddFilm(c *gin.Context) {
 		film_type,
 		release_type,
 		duration,
+		0,
+		image,
+		img_background,
 	)
 
 	var response Model.ResponseData
@@ -58,8 +63,10 @@ func RepoGetAllFilm(id string, film_type string, film_display string) []Model.Fi
 	}
 
 	if film_type != "" {
-		query += " WHERE type = " + id + " AND display_method = " + film_display
+		query += " WHERE film_type = '" + film_type + "' AND display_method = " + film_display
 	}
+
+	fmt.Println(query)
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -86,10 +93,10 @@ func RepoGetAllFilm(id string, film_type string, film_display string) []Model.Fi
 }
 
 func GetAllFilm(c *gin.Context) {
-	film_id := c.Param("film_id")
-	film_type := c.Param("film_type")
-	film_display := c.Param("film_display")
-	fmt.Println(film_type, film_display)
+	film_id := c.Query("film_id")
+	film_type := c.Query("film_type")
+	film_display := c.Query("film_display")
+	fmt.Println(film_type, film_display, film_display)
 
 	Films := RepoGetAllFilm(film_id, film_type, film_display)
 

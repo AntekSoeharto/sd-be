@@ -1,6 +1,7 @@
 package Controller
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sd-api/Model"
@@ -46,7 +47,7 @@ func AddFilm(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func RepoGetAllFilm(id string) []Model.Film {
+func RepoGetAllFilm(id string, film_type string, film_display string) []Model.Film {
 	db := connect()
 	defer db.Close()
 
@@ -56,6 +57,10 @@ func RepoGetAllFilm(id string) []Model.Film {
 		query += " WHERE id = " + id
 	}
 
+	if film_type != "" {
+		query += " WHERE type = " + id + " AND display_method = " + film_display
+	}
+
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Print(err)
@@ -63,11 +68,10 @@ func RepoGetAllFilm(id string) []Model.Film {
 
 	var Film Model.Film
 	var Films []Model.Film
-	var image string
 	for rows.Next() {
 		if err := rows.Scan(&Film.ID, &Film.Judul, &Film.Rating, &Film.TanggalTerbit,
 			&Film.Actor, &Film.Sinopsis, &Film.FilmType, &Film.ReleaseType,
-			&Film.Duration, &image); err != nil {
+			&Film.Duration, &Film.DisplayMethod, &Film.Image, &Film.ImageBackground); err != nil {
 			log.Fatal(err.Error())
 		} else {
 			Films = append(Films, Film)
@@ -83,8 +87,11 @@ func RepoGetAllFilm(id string) []Model.Film {
 
 func GetAllFilm(c *gin.Context) {
 	film_id := c.Param("film_id")
+	film_type := c.Param("film_type")
+	film_display := c.Param("film_display")
+	fmt.Println(film_type, film_display)
 
-	Films := RepoGetAllFilm(film_id)
+	Films := RepoGetAllFilm(film_id, film_type, film_display)
 
 	var response Model.ResponseData
 	if len(Films) > 0 {
@@ -114,7 +121,7 @@ func UpdateFilm(c *gin.Context) {
 	duration, _ := strconv.Atoi(c.PostForm("duration"))
 	film_id := c.PostForm("film_id")
 
-	var Film Model.Film = RepoGetAllFilm(film_id)[0]
+	var Film Model.Film = RepoGetAllFilm(film_id, "", "")[0]
 
 	if judul != "" {
 		Film.Judul = judul

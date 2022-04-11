@@ -20,7 +20,7 @@ func AddUser(c *gin.Context) {
 	password := GetMD5Hash(c.PostForm("password"))
 	fmt.Println(nama)
 
-	Users := RepoGetAllUser("")
+	Users := RepoGetAllUser("", "")
 
 	var sama bool = false
 
@@ -56,9 +56,10 @@ func AddUser(c *gin.Context) {
 }
 
 func GetAllUser(c *gin.Context) {
-	user_id := c.Param("user_id")
+	user_id := c.Param("id")
+	email := c.Query("email")
 
-	Users := RepoGetAllUser(user_id)
+	Users := RepoGetAllUser(user_id, email)
 
 	var response Model.ResponseData
 	if len(Users) > 0 {
@@ -74,7 +75,7 @@ func GetAllUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func RepoGetAllUser(id string) []Model.User {
+func RepoGetAllUser(id string, email string) []Model.User {
 	db := connect()
 	defer db.Close()
 
@@ -82,6 +83,10 @@ func RepoGetAllUser(id string) []Model.User {
 
 	if id != "" {
 		query += " WHERE id = " + id
+	}
+
+	if email != "" {
+		query += " WHERE email = '" + email + "'"
 	}
 
 	rows, err := db.Query(query)
@@ -93,7 +98,7 @@ func RepoGetAllUser(id string) []Model.User {
 	var User Model.User
 	var Users []Model.User
 	for rows.Next() {
-		if err := rows.Scan(&User.ID, &User.Name, &User.Email, &User.Password); err != nil {
+		if err := rows.Scan(&User.ID, &User.Name, &User.Username, &User.Email, &User.Gender, &User.BirthDay, &User.Password); err != nil {
 			log.Fatal(err.Error())
 		} else {
 			Users = append(Users, User)
@@ -112,7 +117,7 @@ func UpdateUser(c *gin.Context) {
 	password := c.PostForm("password")
 	user_id := c.PostForm("user_id")
 
-	var User Model.User = RepoGetAllUser(user_id)[0]
+	var User Model.User = RepoGetAllUser(user_id, "")[0]
 
 	if nama != "" {
 		User.Name = nama
@@ -174,11 +179,13 @@ func Login(c *gin.Context) {
 	email := c.Query("email")
 	password := GetMD5Hash(c.Query("password"))
 	var success bool = false
+	var User Model.User
 
-	Users := RepoGetAllUser("")
+	Users := RepoGetAllUser("", "")
 	for i := 0; i < len(Users); i++ {
 		if Users[i].Email == email {
 			if Users[i].Password == password {
+				User = Users[i]
 				success = true
 			}
 		}
@@ -188,6 +195,7 @@ func Login(c *gin.Context) {
 	if success == true {
 		response.Status = 200
 		response.Message = "Login Success"
+		response.Data = User
 	} else {
 		response.Status = 400
 		response.Message = "Login Failed!"

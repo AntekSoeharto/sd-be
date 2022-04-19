@@ -28,9 +28,11 @@ func main() {
 	router.PUT("/user", controller.UpdateUser)
 	router.DELETE("/user/:user_id", controller.DeleteUser)
 	router.GET("/login", controller.Login)
+	router.POST("/signup", controller.SignUp)
 
 	//Comments
 	router.POST("/comment", controller.AddComment)
+	router.GET("/comment", controller.GetAllComment)
 	router.DELETE("/comment/:comment_id", controller.DeleteComment)
 
 	//MyList

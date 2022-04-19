@@ -19,18 +19,29 @@ func AddFilm(c *gin.Context) {
 	tanggal_terbit := c.PostForm("tanggal_terbit")
 	actor := c.PostForm("actor")
 	sinopsis := c.PostForm("sinopsis")
+	genre := c.PostForm("genre")
 	film_type := c.PostForm("film_type")
 	release_type := c.PostForm("release_type")
 	duration, _ := strconv.Atoi(c.PostForm("duration"))
 	image := c.PostForm("image")
 	img_background := c.PostForm("img_background")
+	fmt.Println(judul)
+	fmt.Println(rating)
+	fmt.Println(tanggal_terbit)
+	fmt.Println(actor)
+	fmt.Println(sinopsis)
+	fmt.Println(genre)
+	fmt.Println(film_type)
+	fmt.Println(release_type)
+	fmt.Println(duration)
 
-	_, errQuery := db.Exec("INSERT INTO films(judul, rating, tanggal_terbit, actor, sinopsis, film_type, release_type, duration, display_method, image, img_background) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+	_, errQuery := db.Exec("INSERT INTO films(judul, rating, tanggal_terbit, actor, sinopsis, genre, film_type, release_type, duration, display_method, image, img_background) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
 		judul,
 		rating,
 		tanggal_terbit,
 		actor,
 		sinopsis,
+		genre,
 		film_type,
 		release_type,
 		duration,
@@ -38,6 +49,7 @@ func AddFilm(c *gin.Context) {
 		image,
 		img_background,
 	)
+	print(errQuery)
 
 	var response Model.ResponseData
 	if errQuery == nil {
@@ -77,7 +89,7 @@ func RepoGetAllFilm(id string, film_type string, film_display string) []Model.Fi
 	var Films []Model.Film
 	for rows.Next() {
 		if err := rows.Scan(&Film.ID, &Film.Judul, &Film.Rating, &Film.TanggalTerbit,
-			&Film.Actor, &Film.Sinopsis, &Film.FilmType, &Film.ReleaseType,
+			&Film.Actor, &Film.Sinopsis, &Film.Genre, &Film.FilmType, &Film.ReleaseType,
 			&Film.Duration, &Film.DisplayMethod, &Film.Image, &Film.ImageBackground); err != nil {
 			log.Fatal(err.Error())
 		} else {
@@ -85,15 +97,11 @@ func RepoGetAllFilm(id string, film_type string, film_display string) []Model.Fi
 		}
 	}
 
-	for i := 0; i < len(Films); i++ {
-		Films[i].ListComment = RepoGetAllComment(strconv.Itoa(Films[i].ID))
-	}
-
 	return Films
 }
 
 func GetAllFilm(c *gin.Context) {
-	film_id := c.Query("film_id")
+	film_id := c.PostForm("judul")
 	film_type := c.Query("film_type")
 	film_display := c.Query("film_display")
 	fmt.Println(film_type, film_display, film_display)
@@ -207,9 +215,10 @@ func SearchFilm(c *gin.Context) {
 	db := connect()
 	defer db.Close()
 
-	search := c.PostForm("search")
+	search := c.Query("search")
+	fmt.Println(search)
 
-	query := "SELECT * FROM films WHERE judul LIKE '" + search + "' OR actor LIKE '" + search + "'"
+	query := "SELECT * FROM films WHERE judul LIKE '%" + search + "%'"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -218,19 +227,14 @@ func SearchFilm(c *gin.Context) {
 
 	var Film Model.Film
 	var Films []Model.Film
-	var image string
 	for rows.Next() {
 		if err := rows.Scan(&Film.ID, &Film.Judul, &Film.Rating, &Film.TanggalTerbit,
-			&Film.Actor, &Film.Sinopsis, &Film.FilmType, &Film.ReleaseType,
-			&Film.Duration, &image); err != nil {
+			&Film.Actor, &Film.Sinopsis, &Film.Genre, &Film.FilmType, &Film.ReleaseType,
+			&Film.Duration, &Film.DisplayMethod, &Film.Image, &Film.ImageBackground); err != nil {
 			log.Fatal(err.Error())
 		} else {
 			Films = append(Films, Film)
 		}
-	}
-
-	for i := 0; i < len(Films); i++ {
-		Films[i].ListComment = RepoGetAllComment(strconv.Itoa(Films[i].ID))
 	}
 
 	var response Model.ResponseData

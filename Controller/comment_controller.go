@@ -15,6 +15,8 @@ func AddComment(c *gin.Context) {
 	user_id := c.PostForm("user_id")
 	film_id := c.PostForm("film_id")
 	comment := c.PostForm("comment")
+	// user_id_temp := c.PostForm("user_id")
+	// fmt.Println(user_id_temp)
 
 	_, errQuery := db.Exec("INSERT INTO comments(user_id, film_id, comment) VALUES (?,?,?)",
 		user_id,
@@ -35,14 +37,16 @@ func AddComment(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func RepoGetAllComment(id string) []Model.Comment {
+func GetAllComment(c *gin.Context) {
 	db := connect()
 	defer db.Close()
 
-	query := "SELECT a.id, a.comment, b.id, b.nama, b.email b FROM comments a JOIN users b ON a.user_id = b.id"
+	film_id := c.Query("film_id")
 
-	if id != "" {
-		query += " WHERE a.film_id = " + id
+	query := "SELECT a.id, a.comment, b.username, b.email b FROM comments a JOIN users b ON a.user_id = b.id"
+
+	if film_id != "" {
+		query += " WHERE a.film_id = " + film_id
 	}
 
 	rows, err := db.Query(query)
@@ -53,14 +57,26 @@ func RepoGetAllComment(id string) []Model.Comment {
 	var Comment Model.Comment
 	var Comments []Model.Comment
 	for rows.Next() {
-		if err := rows.Scan(&Comment.ID, &Comment.Comment, &Comment.User.ID, &Comment.User.Name, &Comment.User.Email); err != nil {
+		if err := rows.Scan(&Comment.ID, &Comment.Comment, &Comment.Username, &Comment.Email); err != nil {
 			log.Fatal(err.Error())
 		} else {
 			Comments = append(Comments, Comment)
 		}
 	}
 
-	return Comments
+	var response Model.ResponseData
+	if len(Comments) > 0 {
+		response.Status = 200
+		response.Message = "Get Comment Success"
+		response.Data = Comments
+	} else {
+		response.Status = 400
+		response.Message = "Get Comment Failed!"
+	}
+
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, response)
+
 }
 
 func DeleteComment(c *gin.Context) {

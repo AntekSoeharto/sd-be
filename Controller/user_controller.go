@@ -112,28 +112,13 @@ func UpdateUser(c *gin.Context) {
 	db := connect()
 	defer db.Close()
 
-	nama := c.PostForm("nama")
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-	user_id := c.PostForm("user_id")
+	email := c.Query("email")
+	password := c.Query("password")
+	passwordHashMD5 := GetMD5Hash(password)
 
-	var User Model.User = RepoGetAllUser(user_id, "")[0]
-
-	if nama != "" {
-		User.Name = nama
-	}
-	if email != "" {
-		User.Email = email
-	}
-	if password != "" {
-		User.Password = password
-	}
-
-	_, errQuery := db.Exec("UPDATE users SET nama=?, email=?, password=? WHERE id=?",
-		User.Name,
-		User.Email,
-		User.Password,
-		User.ID,
+	_, errQuery := db.Exec("UPDATE users SET password=? WHERE email=?",
+		passwordHashMD5,
+		email,
 	)
 
 	var response Model.ResponseData
@@ -203,6 +188,55 @@ func Login(c *gin.Context) {
 
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, response)
+}
+
+func SignUp(c *gin.Context) {
+	db := connect()
+	defer db.Close()
+
+	nama := c.Query("nama")
+	username := c.Query("username")
+	email := c.Query("email")
+	gender := c.Query("gender")
+	birthday := c.Query("birthday")
+	password := c.Query("password")
+	passwordHash := GetMD5Hash(password)
+	success := true
+
+	Users := RepoGetAllUser("", "")
+	for i := 0; i < len(Users); i++ {
+		if Users[i].Email == email {
+			success = false
+		}
+	}
+
+	if success == true {
+		_, errQuery := db.Exec("INSERT INTO users(nama, username, email, gender, birthday, password) VALUES (?,?,?,?,?,?)",
+			nama,
+			username,
+			email,
+			gender,
+			birthday,
+			passwordHash,
+		)
+		if errQuery != nil {
+			fmt.Println(errQuery)
+			success = false
+		}
+	}
+
+	var response Model.ResponseData
+	if success == true {
+		response.Status = 200
+		response.Message = "SignUp Success"
+	} else {
+		response.Status = 400
+		response.Message = "SignUp Failed!"
+	}
+
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, response)
+
 }
 
 func GetMD5Hash(text string) string {

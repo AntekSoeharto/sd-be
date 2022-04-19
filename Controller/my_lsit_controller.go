@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"sd-api/Model"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -56,10 +55,6 @@ func RepoGetMyList(id string) []Model.Film {
 		} else {
 			Films = append(Films, Film)
 		}
-	}
-
-	for i := 0; i < len(Films); i++ {
-		Films[i].ListComment = RepoGetAllComment(strconv.Itoa(Films[i].ID))
 	}
 
 	return Films

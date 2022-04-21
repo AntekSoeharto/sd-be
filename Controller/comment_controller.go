@@ -50,6 +50,8 @@ func GetAllComment(c *gin.Context) {
 	if film_id != "" {
 		query += " WHERE a.film_id = " + film_id
 	}
+	
+	fmt.Println("Debug, masuk ke line 54")
 
 	rows, err := db.Query(query)
 	if err != nil {

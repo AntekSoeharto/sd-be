@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"sd-api/Model"
+	
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +21,8 @@ func AddMyList(c *gin.Context) {
 		user_id,
 		film_id,
 	)
+	
+	fmt.Println("Debug, masuk ke line 25")
 
 	var response Model.ResponseData
 	if errQuery == nil {
@@ -38,11 +42,15 @@ func RepoGetMyList(id string) []Model.Film {
 	defer db.Close()
 
 	query := "SELECT b.* FROM my_list a JOIN films b ON a.film_id = b.id WHERE a.user_id = " + id
+	
 
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Print(err)
 	}
+	
+	fmt.Println("Debug, masuk ke line 52")
+	fmt.Println(err)
 
 	var Film Model.Film
 	var Films []Model.Film

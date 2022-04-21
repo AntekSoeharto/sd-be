@@ -24,6 +24,8 @@ func InsertActor(w http.ResponseWriter, r *http.Request) {
 	BirthDate := r.Form.Get("birth_date")
 	Age, _ := strconv.Atoi(r.Form.Get("age"))
 	Gender := r.Form.Get("gender")
+	
+	fmt.Println("Debug, masuk ke line 28")
 
 	_, errQuery := db.Exec("INSERT INTO actors(name, birth_date, age, gender) VALUES (?, ?, ?, ?)",
 		Name,

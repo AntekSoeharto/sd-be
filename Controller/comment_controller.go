@@ -25,6 +25,8 @@ func AddComment(c *gin.Context) {
 	)
 	
 	fmt.Println("Debug, masuk ke line 27")
+	
+	fmt.Println("Debug, masuk ke line 29")
 
 	var response Model.ResponseData
 	if errQuery == nil {

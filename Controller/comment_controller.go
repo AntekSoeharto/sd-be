@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"sd-api/Model"
+	
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )

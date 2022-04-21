@@ -23,6 +23,8 @@ func AddComment(c *gin.Context) {
 		film_id,
 		comment,
 	)
+	
+	fmt.Println("Debug, masuk ke line 27")
 
 	var response Model.ResponseData
 	if errQuery == nil {

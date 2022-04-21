@@ -68,6 +68,8 @@ func GetAllActor(w http.ResponseWriter, r *http.Request) {
 			Actors = append(Actors, Actor)
 		}
 	}
+	
+	fmt.Println("Debug, masuk ke line 72")
 
 	var response Model.ResponseData
 	if len(Actors) > 0 {
